@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PetAgenda — Agenda online para petshops</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #1D9E75;
+    --green-dark: #116b4e;
+    --green-light: #e8f7f1;
+    --green-mid: #2ec28f;
+    --amber: #F5A623;
+    --amber-dark: #d4891a;
+    --dark: #0e1f18;
+    --gray: #4a5568;
+    --gray-light: #f0faf6;
+    --white: #ffffff;
+    --radius: 20px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    color: var(--dark);
+    background: var(--white);
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 6%;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(29,158,117,0.12);
+    transition: box-shadow .3s;
+  }
+  nav.scrolled { box-shadow: 0 4px 24px rgba(29,158,117,0.10); }
+
+  .nav-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'Fraunces', serif; font-weight: 900; font-size: 1.5rem; color: var(--green);
+    text-decoration: none;
+  }
+  .nav-logo svg { width: 36px; height: 36px; }
+
+  .nav-links { display: flex; align-items: center; gap: 32px; }
+  .nav-links a {
+    text-decoration: none; color: var(--gray); font-weight: 500; font-size: .9rem;
+    transition: color .2s;
+  }
+  .nav-links a:hover { color: var(--green); }
+
+  .btn-nav {
+    background: var(--green); color: #fff; border: none; border-radius: 50px;
+    padding: 10px 24px; font-family: 'DM Sans', sans-serif; font-weight: 600;
+    font-size: .9rem; cursor: pointer; text-decoration: none;
+    transition: background .2s, transform .15s, box-shadow .2s;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-nav:hover { background: var(--green-dark); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(29,158,117,0.35); }
+
+  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
+  .hamburger span { width: 24px; height: 2px; background: var(--dark); border-radius: 2px; transition: .3s; }
+
+  /* ── HERO ── */
+  #hero {
+    min-height: 100vh; padding: 120px 6% 80px;
+    display: grid; grid-template-columns: 1fr 1fr;
+    align-items: center; gap: 60px;
+    background: radial-gradient(ellipse 80% 60% at 70% 50%, #c8f0e1 0%, transparent 65%),
+                radial-gradient(ellipse 50% 40% at 10% 80%, #d4f5e9 0%, transparent 60%),
+                var(--white);
+    position: relative; overflow: hidden;
+  }
+  #hero::before {
+    content: ''; position: absolute; top: -80px; right: -80px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(29,158,117,0.15) 0%, transparent 70%);
+    border-radius: 50%; pointer-events: none;
+  }
+
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--green-light); color: var(--green);
+    border: 1px solid rgba(29,158,117,0.25);
+    border-radius: 50px; padding: 6px 16px; font-size: .8rem; font-weight: 600;
+    letter-spacing: .04em; text-transform: uppercase; margin-bottom: 24px;
+  }
+  .hero-tag span { width: 7px; height: 7px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
+
+  h1 {
+    font-family: 'Fraunces', serif; font-weight: 900; font-size: clamp(2.4rem, 4.5vw, 3.8rem);
+    line-height: 1.1; color: var(--dark); margin-bottom: 22px;
+  }
+  h1 em { font-style: italic; color: var(--green); }
+
+  .hero-sub {
+    font-size: 1.1rem; color: var(--gray); line-height: 1.7; max-width: 480px; margin-bottom: 36px;
+  }
+
+  .hero-btns { display: flex; flex-wrap: wrap; gap: 14px; }
+
+  .btn-primary {
+    background: var(--green); color: #fff; border: none; border-radius: 50px;
+    padding: 15px 32px; font-family: 'DM Sans', sans-serif; font-weight: 600;
+    font-size: 1rem; cursor: pointer; text-decoration: none;
+    transition: all .2s; display: inline-flex; align-items: center; gap: 8px;
+    box-shadow: 0 8px 28px rgba(29,158,117,0.35);
+  }
+  .btn-primary:hover { background: var(--green-dark); transform: translateY(-2px); box-shadow: 0 12px 36px rgba(29,158,117,0.45); }
+
+  .btn-secondary {
+    background: transparent; color: var(--green);
+    border: 2px solid var(--green); border-radius: 50px;
+    padding: 13px 28px; font-family: 'DM Sans', sans-serif; font-weight: 600;
+    font-size: 1rem; cursor: pointer; text-decoration: none;
+    transition: all .2s; display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-secondary:hover { background: var(--green-light); transform: translateY(-2px); }
+
+  .hero-stats {
+    display: flex; gap: 32px; margin-top: 44px; flex-wrap: wrap;
+  }
+  .stat { display: flex; flex-direction: column; }
+  .stat strong { font-family: 'Fraunces', serif; font-size: 2rem; font-weight: 900; color: var(--green); }
+  .stat span { font-size: .8rem; color: var(--gray); margin-top: 2px; }
+
+  /* Mockup */
+  .hero-visual { position: relative; }
+  .mockup-card {
+    background: var(--white);
+    border-radius: 24px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.12), 0 0 0 1px rgba(29,158,117,0.08);
+    overflow: hidden;
+    transform: perspective(1000px) rotateY(-6deg) rotateX(3deg);
+    transition: transform .4s;
+  }
+  .mockup-card:hover { transform: perspective(1000px) rotateY(-2deg) rotateX(1deg); }
+  .mockup-bar {
+    background: var(--green); padding: 14px 20px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .mockup-bar .dots { display: flex; gap: 6px; }
+  .mockup-bar .dots span { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.4); }
+  .mockup-bar .dots span:first-child { background: rgba(255,255,255,0.8); }
+  .mockup-title { color: #fff; font-weight: 600; font-size: .85rem; margin-left: 6px; }
+  .mockup-body { padding: 20px; background: #f8fffe; }
+  .mock-date-row { display: flex; gap: 6px; margin-bottom: 14px; }
+  .mock-day {
+    flex: 1; text-align: center; padding: 10px 4px; border-radius: 12px;
+    font-size: .75rem; font-weight: 500; color: var(--gray); background: var(--white);
+    border: 1px solid #eee;
+  }
+  .mock-day.active { background: var(--green); color: #fff; border-color: var(--green); }
+  .mock-day small { display: block; font-size: .65rem; opacity: .7; }
+  .mock-appt {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px; border-radius: 14px; margin-bottom: 10px;
+    border-left: 4px solid var(--green); background: var(--white);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  }
+  .mock-appt.amber { border-left-color: var(--amber); }
+  .mock-appt-avatar {
+    width: 38px; height: 38px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; background: var(--green-light); flex-shrink: 0;
+  }
+  .mock-appt.amber .mock-appt-avatar { background: #fff8ec; }
+  .mock-appt-info { flex: 1; }
+  .mock-appt-name { font-weight: 600; font-size: .82rem; color: var(--dark); }
+  .mock-appt-detail { font-size: .73rem; color: var(--gray); margin-top: 2px; }
+  .mock-appt-time {
+    font-size: .75rem; font-weight: 700; color: var(--green);
+    background: var(--green-light); padding: 4px 10px; border-radius: 20px;
+  }
+  .mock-appt.amber .mock-appt-time { color: var(--amber-dark); background: #fff3dc; }
+
+  .float-badge {
+    position: absolute; background: var(--white);
+    border-radius: 16px; padding: 12px 16px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.12);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .float-badge.top { top: -20px; right: -20px; }
+  .float-badge.bot { bottom: 30px; left: -30px; }
+  .badge-icon { font-size: 1.4rem; }
+  .badge-text { font-size: .75rem; }
+  .badge-text strong { display: block; font-weight: 700; color: var(--dark); }
+  .badge-text span { color: var(--gray); }
+
+  /* ── SECTION BASE ── */
+  section { padding: 96px 6%; }
+  .section-label {
+    display: inline-block; background: var(--green-light); color: var(--green);
+    border-radius: 50px; padding: 5px 16px; font-size: .78rem;
+    font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  h2 {
+    font-family: 'Fraunces', serif; font-weight: 900;
+    font-size: clamp(2rem, 3.5vw, 3rem); line-height: 1.15; margin-bottom: 16px;
+  }
+  h2 em { font-style: italic; color: var(--green); }
+  .section-sub { color: var(--gray); font-size: 1.05rem; line-height: 1.7; max-width: 560px; }
+
+  /* ── COMO FUNCIONA ── */
+  #como-funciona { background: var(--dark); color: #fff; position: relative; overflow: hidden; }
+  #como-funciona::before {
+    content: ''; position: absolute; bottom: -100px; right: -100px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(29,158,117,0.2) 0%, transparent 65%);
+    border-radius: 50%;
+  }
+  #como-funciona .section-label { background: rgba(29,158,117,0.2); }
+  #como-funciona h2 { color: #fff; }
+  #como-funciona .section-sub { color: rgba(255,255,255,0.6); }
+
+  .steps-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 32px; margin-top: 56px; position: relative;
+  }
+  .steps-grid::before {
+    content: ''; position: absolute; top: 48px; left: calc(33.33% - 1px);
+    width: calc(33.33%); height: 2px;
+    background: linear-gradient(90deg, var(--green), transparent);
+    pointer-events: none;
+  }
+  .steps-grid::after {
+    content: ''; position: absolute; top: 48px; left: 50%;
+    width: calc(33.33%); height: 2px;
+    background: linear-gradient(90deg, var(--green), transparent);
+    pointer-events: none;
+  }
+
+  .step {
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: var(--radius); padding: 36px 28px;
+    transition: background .3s, transform .3s;
+    position: relative;
+  }
+  .step:hover { background: rgba(29,158,117,0.12); transform: translateY(-6px); }
+  .step-num {
+    width: 52px; height: 52px; border-radius: 16px;
+    background: var(--green); display: flex; align-items: center; justify-content: center;
+    font-family: 'Fraunces', serif; font-weight: 900; font-size: 1.4rem; color: #fff;
+    margin-bottom: 24px;
+  }
+  .step-icon { font-size: 2rem; margin-bottom: 12px; }
+  .step h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 10px; color: #fff; }
+  .step p { font-size: .9rem; line-height: 1.65; color: rgba(255,255,255,0.55); }
+
+  .steps-cta { text-align: center; margin-top: 52px; }
+
+  /* ── BENEFÍCIOS ── */
+  #beneficios { background: var(--gray-light); }
+  .bene-header { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 24px; margin-bottom: 52px; }
+  .bene-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+  .bene-card {
+    background: var(--white); border-radius: var(--radius); padding: 32px 24px;
+    border: 1px solid rgba(29,158,117,0.1);
+    transition: box-shadow .3s, transform .3s;
+    position: relative; overflow: hidden;
+  }
+  .bene-card::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+    background: var(--green); transform: scaleX(0); transition: transform .3s; transform-origin: left;
+  }
+  .bene-card:hover { box-shadow: 0 12px 40px rgba(29,158,117,0.12); transform: translateY(-4px); }
+  .bene-card:hover::after { transform: scaleX(1); }
+  .bene-emoji { font-size: 2.2rem; margin-bottom: 16px; display: block; }
+  .bene-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+  .bene-card p { font-size: .88rem; color: var(--gray); line-height: 1.6; }
+
+  /* ── PLANOS ── */
+  #planos { background: var(--white); }
+  .planos-header { text-align: center; margin-bottom: 56px; }
+  .planos-header .section-sub { margin: 0 auto; }
+  .planos-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 28px; max-width: 800px; margin: 0 auto; }
+
+  .plano-card {
+    border-radius: 28px; padding: 40px 36px;
+    border: 2px solid #e8f0ee; position: relative; overflow: hidden;
+    transition: transform .3s, box-shadow .3s;
+  }
+  .plano-card:hover { transform: translateY(-6px); }
+
+  .plano-card.featured {
+    border-color: var(--green);
+    background: linear-gradient(145deg, #0e1f18 0%, #1a3d2a 100%);
+    color: #fff;
+    box-shadow: 0 24px 60px rgba(29,158,117,0.3);
+  }
+  .plano-badge {
+    position: absolute; top: 20px; right: 20px;
+    background: var(--amber); color: var(--dark); border-radius: 50px;
+    padding: 4px 14px; font-size: .72rem; font-weight: 800;
+    text-transform: uppercase; letter-spacing: .06em;
+  }
+  .plano-name { font-family: 'Fraunces', serif; font-weight: 900; font-size: 1.6rem; margin-bottom: 8px; }
+  .plano-desc { font-size: .88rem; color: var(--gray); margin-bottom: 28px; }
+  .plano-card.featured .plano-desc { color: rgba(255,255,255,0.55); }
+
+  .plano-price { margin-bottom: 32px; }
+  .plano-price .currency { font-size: 1.1rem; font-weight: 700; vertical-align: top; line-height: 3; color: var(--green); }
+  .plano-price .amount { font-family: 'Fraunces', serif; font-size: 3.5rem; font-weight: 900; color: var(--green); line-height: 1; }
+  .plano-card.featured .plano-price .currency,
+  .plano-card.featured .plano-price .amount { color: var(--green-mid); }
+  .plano-price .period { font-size: .85rem; color: var(--gray); }
+  .plano-card.featured .plano-price .period { color: rgba(255,255,255,0.5); }
+
+  .plano-features { list-style: none; margin-bottom: 36px; display: flex; flex-direction: column; gap: 12px; }
+  .plano-features li { display: flex; align-items: flex-start; gap: 10px; font-size: .9rem; color: var(--gray); }
+  .plano-card.featured .plano-features li { color: rgba(255,255,255,0.8); }
+  .check { width: 20px; height: 20px; border-radius: 6px; background: var(--green-light);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .plano-card.featured .check { background: rgba(29,158,117,0.3); }
+  .check svg { width: 12px; height: 12px; stroke: var(--green); stroke-width: 2.5; fill: none; }
+  .plano-card.featured .check svg { stroke: var(--green-mid); }
+
+  .btn-plano {
+    width: 100%; padding: 15px; border-radius: 50px; border: none;
+    font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 1rem;
+    cursor: pointer; text-decoration: none; text-align: center; display: block;
+    transition: all .2s;
+  }
+  .btn-plano.outline { background: transparent; border: 2px solid var(--green); color: var(--green); }
+  .btn-plano.outline:hover { background: var(--green); color: #fff; }
+  .btn-plano.solid { background: var(--green); color: #fff; box-shadow: 0 8px 24px rgba(29,158,117,0.4); }
+  .btn-plano.solid:hover { background: var(--green-dark); box-shadow: 0 12px 32px rgba(29,158,117,0.5); }
+
+  /* ── DEPOIMENTOS ── */
+  #depoimentos { background: var(--gray-light); }
+  .dep-header { text-align: center; margin-bottom: 52px; }
+  .dep-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .dep-card {
+    background: var(--white); border-radius: var(--radius); padding: 32px;
+    border: 1px solid rgba(29,158,117,0.08);
+    transition: box-shadow .3s;
+  }
+  .dep-card:hover { box-shadow: 0 10px 36px rgba(29,158,117,0.1); }
+  .dep-stars { color: var(--amber); font-size: 1rem; letter-spacing: 2px; margin-bottom: 16px; }
+  .dep-text { font-size: .95rem; color: var(--gray); line-height: 1.7; font-style: italic; margin-bottom: 24px; }
+  .dep-author { display: flex; align-items: center; gap: 12px; }
+  .dep-avatar {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--green); display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 1rem; color: #fff; flex-shrink: 0;
+  }
+  .dep-info strong { font-weight: 700; font-size: .9rem; color: var(--dark); display: block; }
+  .dep-info span { font-size: .78rem; color: var(--gray); }
+
+  /* ── CTA FINAL ── */
+  #cta {
+    background: linear-gradient(135deg, var(--dark) 0%, #0d3322 100%);
+    text-align: center; position: relative; overflow: hidden;
+  }
+  #cta::before {
+    content: ''; position: absolute; top: -150px; left: 50%;
+    transform: translateX(-50%);
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(29,158,117,0.2) 0%, transparent 65%);
+    border-radius: 50%;
+  }
+  #cta h2 { color: #fff; position: relative; }
+  #cta .section-sub { color: rgba(255,255,255,0.55); margin: 0 auto 40px; position: relative; }
+  .cta-btns { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; position: relative; }
+  .btn-cta-main {
+    background: var(--green); color: #fff; border: none; border-radius: 50px;
+    padding: 17px 40px; font-family: 'DM Sans', sans-serif; font-weight: 700;
+    font-size: 1.05rem; cursor: pointer; text-decoration: none;
+    transition: all .2s; display: inline-flex; align-items: center; gap: 8px;
+    box-shadow: 0 10px 36px rgba(29,158,117,0.4);
+  }
+  .btn-cta-main:hover { background: var(--green-dark); transform: translateY(-2px); box-shadow: 0 16px 44px rgba(29,158,117,0.5); }
+  .btn-cta-ghost {
+    background: transparent; color: rgba(255,255,255,0.7);
+    border: 2px solid rgba(255,255,255,0.2); border-radius: 50px;
+    padding: 15px 32px; font-family: 'DM Sans', sans-serif; font-weight: 600;
+    font-size: 1.05rem; cursor: pointer; text-decoration: none;
+    transition: all .2s; display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-cta-ghost:hover { border-color: rgba(255,255,255,0.5); color: #fff; background: rgba(255,255,255,0.05); }
+
+  .cta-trust { margin-top: 28px; font-size: .83rem; color: rgba(255,255,255,0.4); position: relative; }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--dark); border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 48px 6%; display: flex; justify-content: space-between;
+    align-items: center; flex-wrap: wrap; gap: 24px;
+  }
+  .footer-logo { font-family: 'Fraunces', serif; font-weight: 900; font-size: 1.3rem; color: var(--green); }
+  .footer-links { display: flex; gap: 28px; flex-wrap: wrap; }
+  .footer-links a { color: rgba(255,255,255,0.4); text-decoration: none; font-size: .85rem; transition: color .2s; }
+  .footer-links a:hover { color: var(--green); }
+  .footer-copy { color: rgba(255,255,255,0.25); font-size: .8rem; width: 100%; text-align: center; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 24px; margin-top: 8px; }
+
+  /* ── ANIMATIONS ── */
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: .5; transform: scale(1.3); }
+  }
+  @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+  .hero-visual { animation: float 5s ease-in-out infinite; }
+
+  .reveal { opacity: 0; transform: translateY(30px); transition: opacity .7s, transform .7s; }
+  .reveal.visible { opacity: 1; transform: none; }
+  .reveal-delay-1 { transition-delay: .1s; }
+  .reveal-delay-2 { transition-delay: .2s; }
+  .reveal-delay-3 { transition-delay: .3s; }
+  .reveal-delay-4 { transition-delay: .4s; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 1024px) {
+    .bene-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 768px) {
+    #hero { grid-template-columns: 1fr; padding: 100px 6% 60px; }
+    .hero-visual { display: none; }
+    .steps-grid, .dep-grid { grid-template-columns: 1fr; }
+    .planos-grid { grid-template-columns: 1fr; }
+    .bene-grid { grid-template-columns: 1fr; }
+    .steps-grid::before, .steps-grid::after { display: none; }
+    .nav-links { display: none; }
+    .hamburger { display: flex; }
+    .bene-header { flex-direction: column; }
+    footer { flex-direction: column; text-align: center; }
+    .footer-links { justify-content: center; }
+    h1 { font-size: 2.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="navbar">
+  <a href="#" class="nav-logo">
+    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="40" height="40" rx="12" fill="#1D9E75"/>
+      <path d="M12 10C12 8.9 12.9 8 14 8s2 .9 2 2-.9 2-2 2-2-.9-2-2zm12 0c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm-6 4c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm-8 4c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm16 0c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zM20 20c-5 0-9 3-9 7 0 1.7 2.7 3 9 3s9-1.3 9-3c0-4-4-7-9-7z" fill="white"/>
+    </svg>
+    PetAgenda
+  </a>
+  <div class="nav-links">
+    <a href="#como-funciona">Como funciona</a>
+    <a href="#beneficios">Benefícios</a>
+    <a href="#planos">Planos</a>
+    <a class="btn-nav" href="https://pet-flow-spot.base44.app/" target="_blank">Acessar →</a>
+  </div>
+  <div class="hamburger" onclick="this.classList.toggle('open')">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-content">
+    <div class="hero-tag"><span></span> Gestão para petshops e clínicas</div>
+    <h1>Sua agenda<br><em>inteligente</em>,<br>seu negócio crescendo.</h1>
+    <p class="hero-sub">O PetAgenda organiza seus agendamentos, reduz faltas e mantém seus clientes voltando — tudo numa plataforma simples de usar.</p>
+    <div class="hero-btns">
+      <a href="https://pet-flow-spot.base44.app/" target="_blank" class="btn-primary">
+        Acessar agora 
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <a href="#planos" class="btn-secondary">Ver planos e valores</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><strong>2min</strong><span>para configurar</span></div>
+      <div class="stat"><strong>0%</strong><span>de taxa de uso</span></div>
+      <div class="stat"><strong>24h</strong><span>agenda online</span></div>
+    </div>
+  </div>
+
+  <div class="hero-visual">
+    <div style="position:relative;">
+      <div class="mockup-card">
+        <div class="mockup-bar">
+          <div class="dots"><span></span><span></span><span></span></div>
+          <span class="mockup-title">📅 PetAgenda — Hoje</span>
+        </div>
+        <div class="mockup-body">
+          <div class="mock-date-row">
+            <div class="mock-day"><small>Seg</small>28</div>
+            <div class="mock-day"><small>Ter</small>29</div>
+            <div class="mock-day active"><small>Qua</small>30</div>
+            <div class="mock-day"><small>Qui</small>31</div>
+            <div class="mock-day"><small>Sex</small>01</div>
+          </div>
+          <div class="mock-appt">
+            <div class="mock-appt-avatar">🐶</div>
+            <div class="mock-appt-info">
+              <div class="mock-appt-name">Bolinha — Labrador</div>
+              <div class="mock-appt-detail">Banho e Tosa · Ana Souza</div>
+            </div>
+            <div class="mock-appt-time">09:00</div>
+          </div>
+          <div class="mock-appt amber">
+            <div class="mock-appt-avatar">🐱</div>
+            <div class="mock-appt-info">
+              <div class="mock-appt-name">Mimi — Siamês</div>
+              <div class="mock-appt-detail">Consulta Veterinária · Dr. Léo</div>
+            </div>
+            <div class="mock-appt-time">11:30</div>
+          </div>
+          <div class="mock-appt">
+            <div class="mock-appt-avatar">🐕</div>
+            <div class="mock-appt-info">
+              <div class="mock-appt-name">Rex — Pastor Alemão</div>
+              <div class="mock-appt-detail">Tosa · Carlos Lima</div>
+            </div>
+            <div class="mock-appt-time">14:00</div>
+          </div>
+        </div>
+      </div>
+      <div class="float-badge top">
+        <span class="badge-icon">🔔</span>
+        <div class="badge-text"><strong>Lembrete enviado!</strong><span>Bolinha — 09:00</span></div>
+      </div>
+      <div class="float-badge bot">
+        <span class="badge-icon">✅</span>
+        <div class="badge-text"><strong>3 agendamentos hoje</strong><span>2 confirmados</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMO FUNCIONA -->
+<section id="como-funciona">
+  <div style="text-align:center; margin-bottom: 8px;">
+    <span class="section-label">Como funciona</span>
+  </div>
+  <h2 style="text-align:center; color:#fff;">Em <em>3 passos</em><br>você já está rodando</h2>
+  <p class="section-sub" style="text-align:center; margin: 0 auto 0;">Sem complicação, sem treinamento longo. Configure hoje e comece a usar amanhã.</p>
+
+  <div class="steps-grid">
+    <div class="step reveal">
+      <div class="step-num">1</div>
+      <div class="step-icon">🏪</div>
+      <h3>Crie sua conta</h3>
+      <p>Cadastre seu petshop ou clínica em minutos. Adicione seus profissionais, serviços e horários disponíveis.</p>
+    </div>
+    <div class="step reveal reveal-delay-1">
+      <div class="step-num">2</div>
+      <div class="step-icon">📲</div>
+      <h3>Compartilhe o link</h3>
+      <p>Envie seu link de agendamento pelo WhatsApp, Instagram ou site. Seus clientes agendam com autonomia 24h por dia.</p>
+    </div>
+    <div class="step reveal reveal-delay-2">
+      <div class="step-num">3</div>
+      <div class="step-icon">🎉</div>
+      <h3>Gerencie tudo</h3>
+      <p>Visualize agenda do dia, confirme serviços, acesse histórico de clientes e tenha o controle total do seu negócio.</p>
+    </div>
+  </div>
+  <div class="steps-cta">
+    <a href="https://pet-flow-spot.base44.app/" target="_blank" class="btn-primary">Começar agora, é grátis →</a>
+  </div>
+</section>
+
+<!-- BENEFÍCIOS -->
+<section id="beneficios">
+  <div class="bene-header">
+    <div>
+      <span class="section-label">Benefícios</span>
+      <h2>Tudo que seu<br>petshop <em>precisa</em></h2>
+    </div>
+    <p class="section-sub">Ferramentas pensadas para quem trabalha com pets, não para quem trabalha com tecnologia.</p>
+  </div>
+  <div class="bene-grid">
+    <div class="bene-card reveal">
+      <span class="bene-emoji">📅</span>
+      <h3>Agenda online 24h</h3>
+      <p>Seu cliente agenda a qualquer hora do dia — você acorda com a agenda cheia.</p>
+    </div>
+    <div class="bene-card reveal reveal-delay-1">
+      <span class="bene-emoji">🔔</span>
+      <h3>Lembretes automáticos</h3>
+      <p>Reduza faltas e cancelamentos de última hora com lembretes inteligentes para os tutores.</p>
+    </div>
+    <div class="bene-card reveal reveal-delay-2">
+      <span class="bene-emoji">📊</span>
+      <h3>Histórico completo</h3>
+      <p>Acesse todo o histórico de serviços de cada pet: banhos anteriores, vacinas, consultas e mais.</p>
+    </div>
+    <div class="bene-card reveal reveal-delay-3">
+      <span class="bene-emoji">📱</span>
+      <h3>Funciona em qualquer tela</h3>
+      <p>Celular, tablet ou computador — o PetAgenda se adapta ao dispositivo que você usar.</p>
+    </div>
+    <div class="bene-card reveal">
+      <span class="bene-emoji">👥</span>
+      <h3>Multi-profissionais</h3>
+      <p>Gerencie a agenda de todos da equipe em um só lugar, com visões individuais por profissional.</p>
+    </div>
+    <div class="bene-card reveal reveal-delay-1">
+      <span class="bene-emoji">🐾</span>
+      <h3>Cadastro de Pets</h3>
+      <p>Ficha completa de cada animal: raça, peso, temperamento e observações especiais.</p>
+    </div>
+    <div class="bene-card reveal reveal-delay-2">
+      <span class="bene-emoji">⏱️</span>
+      <h3>Controle de horários</h3>
+      <p>Defina duração de cada serviço e evite sobreposição de agendamentos sem esforço.</p>
+    </div>
+    <div class="bene-card reveal reveal-delay-3">
+      <span class="bene-emoji">🔒</span>
+      <h3>Seguro e confiável</h3>
+      <p>Seus dados e os de seus clientes protegidos. Acesso com login seguro para toda a equipe.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PLANOS -->
+<section id="planos">
+  <div class="planos-header">
+    <span class="section-label">Planos e valores</span>
+    <h2>Simples, <em>transparente</em>,<br>sem surpresas</h2>
+    <p class="section-sub">Escolha o plano ideal para o tamanho do seu negócio. Sem taxa de instalação, sem fidelidade.</p>
+  </div>
+  <div class="planos-grid">
+    <!-- PetAU -->
+    <div class="plano-card reveal">
+      <div class="plano-name">🐾 PetAU</div>
+      <p class="plano-desc">Ideal para autônomos e pequenos petshops com até 2 profissionais.</p>
+      <div class="plano-price">
+        <span class="currency">R$</span>
+        <span class="amount">29</span>
+        <span style="font-family:'Fraunces',serif;font-size:2rem;font-weight:900;color:var(--green)">,90</span>
+        <span class="period">/mês</span>
+      </div>
+      <ul class="plano-features">
+        <li>
+          <span class="check"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></span>
+          Até <strong style="margin-left:2px;">2 profissionais</strong>
+        </li>
+        <li>
+          <span class="check"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></span>
+          Agendamentos ilimitados
+        </li>
+        <li>
+          <span class="check"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></span>
+          Cadastro completo de pets
+        </li>
+        <li>
+          <span class="check"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></span>
+          Link de agendamento público
+        </li>
+        <li>
+          <span class="check"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></span>
+          Lembretes automáticos
+        </li>
+      </ul>
+      <a href="https://pet-flow-spot.base44.app/" target="_blank" class="btn-plano outline">Começar com PetAU</a>
+    </div>
+    <!-- Petmium -->
+    <div class="plano-card featured reveal reveal-delay-1">
+      <div class="plano-badge">⭐ Mais popular</div>
+      <div class="plano-name">💎 Petmium</div>
+      <p class="plano-desc">Para clínicas e petshops em crescimento com equipes maiores.</p>
+      <div class="plano-price">
+        <span class="currency">R$</span>
+        <span class="amount">99</span>
+        <span style="font-family:'Fraunces',serif;font-size:2rem;font-weight:900;color:var(--green-mid)">,90</span>
+        <span class="period">/mês</span>
+      </div>
+      <ul class="plano-features">
+        <li>
+          <span class="check"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></span>
+          Até <strong style="margin-left:2px;">20 profissionais</strong>
+        </li>
+        <li>
+          <span class="check"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></span>
+          Tudo do plano PetAU
+        </li>
+        <li>
+          <span class="check"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></span>
+          Painel multi-profissional
+        </li>
+        <li>
+          <span class="check"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></span>
+          Relatórios e histórico avançado
+        </li>
+        <li>
+          <span class="check"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></span>
+          Suporte prioritário
+        </li>
+        <li>
+          <span class="check"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></span>
+          Customização de serviços e horários
+        </li>
+      </ul>
+      <a href="https://pet-flow-spot.base44.app/" target="_blank" class="btn-plano solid">Assinar Petmium agora</a>
+    </div>
+  </div>
+</section>
+
+<!-- DEPOIMENTOS -->
+<section id="depoimentos">
+  <div class="dep-header">
+    <span class="section-label">Quem usa, aprova</span>
+    <h2>O que nossos clientes<br><em>estão dizendo</em></h2>
+  </div>
+  <div class="dep-grid">
+    <div class="dep-card reveal">
+      <div class="dep-stars">★★★★★</div>
+      <p class="dep-text">"Desde que comecei a usar o PetAgenda as faltas caíram muito. Os tutores recebem o lembrete e confirmam na hora. É incrível!"</p>
+      <div class="dep-author">
+        <div class="dep-avatar">AL</div>
+        <div class="dep-info">
+          <strong>Ana Lima</strong>
+          <span>Pet Shop Fofinhos — Recife, PE</span>
+        </div>
+      </div>
+    </div>
+    <div class="dep-card reveal reveal-delay-1">
+      <div class="dep-stars">★★★★★</div>
+      <p class="dep-text">"Administrar a agenda de 4 tosadores era um caos. Agora cada um acessa a própria agenda e eu visualizo tudo de um lugar só."</p>
+      <div class="dep-author">
+        <div class="dep-avatar" style="background:#d4891a;">MR</div>
+        <div class="dep-info">
+          <strong>Marcos Rocha</strong>
+          <span>Clínica VetPrime — Caruaru, PE</span>
+        </div>
+      </div>
+    </div>
+    <div class="dep-card reveal reveal-delay-2">
+      <div class="dep-stars">★★★★★</div>
+      <p class="dep-text">"Meu cliente agenda pelo WhatsApp e eu já vejo na plataforma. Economizo tempo, evito confusão e o petshop ficou mais profissional."</p>
+      <div class="dep-author">
+        <div class="dep-avatar" style="background:#2563eb;">CS</div>
+        <div class="dep-info">
+          <strong>Carla Santos</strong>
+          <span>Tosa & Cia — Olinda, PE</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section id="cta">
+  <span class="section-label" style="background:rgba(29,158,117,0.2)">Comece hoje</span>
+  <h2>Seu petshop organizado<br>começa <em>agora</em></h2>
+  <p class="section-sub">Junte-se a centenas de petshops e clínicas que já simplificaram seus agendamentos com o PetAgenda.</p>
+  <div class="cta-btns">
+    <a href="https://pet-flow-spot.base44.app/" target="_blank" class="btn-cta-main">
+      Acessar o PetAgenda
+      <svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a href="#planos" class="btn-cta-ghost">Ver planos e valores</a>
+  </div>
+  <p class="cta-trust">🔒 Sem cartão de crédito &nbsp;·&nbsp; Configure em 2 minutos &nbsp;·&nbsp; Cancele quando quiser</p>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">🐾 PetAgenda</div>
+  <div class="footer-links">
+    <a href="#como-funciona">Como funciona</a>
+    <a href="#planos">Planos</a>
+    <a href="#beneficios">Benefícios</a>
+    <a href="https://pet-flow-spot.base44.app/" target="_blank">Acessar</a>
+  </div>
+  <div class="footer-copy">© 2025 PetAgenda · Todos os direitos reservados</div>
+</footer>
+
+<script>
+  // Nav scroll effect
+  const nav = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 40);
+  });
+
+  // Reveal on scroll
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+  }, { threshold: 0.12 });
+  reveals.forEach(el => observer.observe(el));
+
+  // Smooth anchor scroll
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
+    });
+  });
+</script>
+</body>
+</html>
